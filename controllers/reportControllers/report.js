@@ -1,56 +1,65 @@
 const models = require('../../models')
+const moment = require('moment')
 var jwt = require('jsonwebtoken')
-var moment = require('moment')
-const { Op } = require('sequelize')
-
-const report = async (req, res, next) => {
+async function report(req, res, next) {
     try {
         const token = req.headers['access-token']
         const payload = jwt.decode(token)
+        let prevDates = [];
+        let info = {}
+        let output = []
 
-        const data = await models.Activities.findAll({
-            where: {
-                userId: payload.userId,
-                date: {
-                    [Op.gte]: moment().subtract(7, 'days').toDate()
-                }
-            }
-        })
-        console.log(moment().subtract(1, 'days').toDate())
-        let j = 0
-        let result = []
-        let diff, duration
-        for (j = 0; j < 7; j++) {
-            let count = 0
-            duration = 0
-            date = moment().subtract(j, 'days').toDate()
-            for (let i in data) {
-                if (moment(data[i].date).format('L') === moment(date).format('L') && data[i].endTime !== null) {
-
-                    count++
-                    diff = moment(data[i].endTime, "HH:mm:ss").diff(moment(data[i].startTime, "HH:mm:ss"))
-                    duration = duration + diff
-
-                }
-            }
-            result.push({
-                date: moment(date).format('L'),
-                count: count,
-                duration: duration,
-            })
+        for (let i = 0; i < 7; i++) {
+            let date = new Date();
+            let prevdate = date.getDate() - i;
+            date.setDate(prevdate)
+            let nowDate = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;
+            prevDates.push(nowDate)
         }
-        console.log(result)
-        if (data) {
-            res.status(200).json({
-                result
+
+        for (i = 0; i < 7; i++) {
+            let sum = 0;
+            let obj = [];
+            let c=0;
+
+            const data = await models.Activities.findAll({
+                where: {
+                    userId: payload.userId,
+                    date: prevDates[i]
+                }
             })
+            obj = [...JSON.parse(JSON.stringify(data, null, 4))]
+            if (obj.length !== 0) {
+                obj.map(act => {
+                    if (act.endTime !== null)
+                    {
+                        c++
+                        sum = sum + moment(act.endTime, "HH:mm:ss").diff(moment(act.startTime, "HH:mm:ss"))
+                    }
+                })
+                info = {
+                    date: prevDates[i], count: c, duration: sum
+                }
+                output.push(info)
+                // console.log(obj.length)
+                // console.log(sum)
+                // console.log(info)
+            }
+            else {
+                info = {
+                    date: prevDates[i], count: 0, duration: 0
+                }
+                output.push(info)
+            }
+
         }
-    }
-    catch (error) {
-        res.status(400).json({
-            status: false,
-            error,
+        res.status(200).json({
+            output
         })
     }
+    catch (err) {
+        next(err)
+    }
+
 }
 module.exports = report;
