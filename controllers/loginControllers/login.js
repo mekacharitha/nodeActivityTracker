@@ -20,7 +20,7 @@ const login = async (req, res, next) => {
             res.status(200).json({
                  success: true, 
                  token: token,
-                  user: user 
+                 user: user 
                 });
         } else {
             res.status(401).send({

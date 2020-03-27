@@ -25,6 +25,7 @@ const addActivity = async (req, res, next) => {
     catch (error) {
         res.status(400).json({
             status: false,
+            message:"could not add activity",
             error
         })
     }

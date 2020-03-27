@@ -15,13 +15,13 @@ const updatePassword = async (req, res, next) => {
             user.comparePassword(req.body.oldPassword, (err, isMatch) => {
                 if (isMatch && !err) {
                     user.update({ password: req.body.newPassword })
-                    res.status(200).json({
+                    res.status(201).json({
                         message: "password changed successfully",
                     })
                 } else {
                     res.status(401).send({ 
                         success: false, 
-                        msg: 'Authentication failed. Wrong old password.' });
+                        message: 'Authentication failed. Wrong old password.' });
                 }
             })
 

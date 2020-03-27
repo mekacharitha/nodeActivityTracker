@@ -41,9 +41,7 @@ async function report(req, res, next) {
                     date: prevDates[i], count: c, duration: sum
                 }
                 output.push(info)
-                // console.log(obj.length)
-                // console.log(sum)
-                // console.log(info)
+                
             }
             else {
                 info = {
@@ -57,8 +55,11 @@ async function report(req, res, next) {
             output
         })
     }
-    catch (err) {
-        next(err)
+    catch (error) {
+        res.status(400).json({
+            success: false,
+            error
+        })
     }
 
 }

@@ -15,9 +15,7 @@ const signUp = async (req, res, next) => {
                 user
             })
         }
-        // res.status(201).send(
-        //     user
-        // );
+       
         else {
             res.status(400).json(
                 {
